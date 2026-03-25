@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Proxy Browser</title>
+  <title>Real Proxy Browser</title>
 
   <style>
     body {
@@ -9,23 +9,6 @@
       background: #0f0f0f;
       color: white;
       font-family: Arial;
-    }
-
-    #tabs {
-      display: flex;
-      background: #111;
-      padding: 5px;
-    }
-
-    .tab {
-      padding: 6px 10px;
-      background: #222;
-      margin-right: 5px;
-      cursor: pointer;
-    }
-
-    .active {
-      background: #4CAF50;
     }
 
     #bar {
@@ -50,29 +33,23 @@
       cursor: pointer;
     }
 
-    #frame {
-      height: calc(100vh - 100px);
+    iframe {
+      width: 100%;
+      height: calc(100vh - 60px);
+      border: none;
     }
   </style>
 </head>
 <body>
 
-<div id="tabs"></div>
-
 <div id="bar">
   <input id="url" placeholder="Search or enter URL">
   <button onclick="go()">Go</button>
-  <button onclick="newTab()">+</button>
 </div>
 
-<div id="frame"></div>
-
-<script src="/scramjet.client.js"></script>
+<iframe id="frame"></iframe>
 
 <script>
-let tabs = [];
-let currentTab = 0;
-
 function isURL(str) {
   return str.includes(".") && !str.includes(" ");
 }
@@ -85,71 +62,17 @@ function buildURL(input) {
   }
 }
 
-// ENTER KEY SUPPORT
-document.getElementById("url").addEventListener("keydown", e => {
-  if (e.key === "Enter") go();
-});
-
-// TAB SYSTEM
-function newTab() {
-  tabs.push({ url: "", content: "" });
-  currentTab = tabs.length - 1;
-  renderTabs();
-}
-
-function switchTab(i) {
-  currentTab = i;
-  renderTabs();
-  renderPage();
-}
-
-function renderTabs() {
-  const tabBar = document.getElementById("tabs");
-  tabBar.innerHTML = "";
-
-  tabs.forEach((t, i) => {
-    const el = document.createElement("div");
-    el.className = "tab " + (i === currentTab ? "active" : "");
-    el.textContent = t.url || "New Tab";
-    el.onclick = () => switchTab(i);
-    tabBar.appendChild(el);
-  });
-}
-
 function go() {
   let input = document.getElementById("url").value.trim();
   let url = buildURL(input);
 
-  tabs[currentTab].url = url;
-  loadPage(url);
-  renderTabs();
+  document.getElementById("frame").src = "/bare/" + btoa(url);
 }
 
-// SHADOW DOM RENDER (fixes CSS issue)
-function renderPage(html) {
-  const container = document.getElementById("frame");
-  container.innerHTML = "";
-
-  const shadowHost = document.createElement("div");
-  container.appendChild(shadowHost);
-
-  const shadow = shadowHost.attachShadow({ mode: "open" });
-  shadow.innerHTML = html;
-}
-
-// LOAD PAGE
-async function loadPage(url) {
-  const res = await fetch("/api/proxy?url=" + encodeURIComponent(url));
-  let html = await res.text();
-
-  html = window.$scramjet.rewriteHtml(html, url);
-
-  tabs[currentTab].content = html;
-  renderPage(html);
-}
-
-// INIT
-newTab();
+// ENTER KEY
+document.getElementById("url").addEventListener("keydown", e => {
+  if (e.key === "Enter") go();
+});
 </script>
 
 </body>
