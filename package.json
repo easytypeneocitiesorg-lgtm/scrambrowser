@@ -1,7 +1,0 @@
-{
-  "name": "proxy-browser",
-  "version": "1.0.0",
-  "dependencies": {
-    "@titaniumnetwork-dev/ultraviolet": "^3.0.0"
-  }
-}
