@@ -1,21 +1,27 @@
-// api/proxy.js
-import fetch from "node-fetch";
-
+// /api/proxy.js
 export default async function handler(req, res) {
-  const { url } = req.query;
-
-  if (!url) {
-    res.status(400).send("No URL provided");
-    return;
-  }
-
   try {
-    // Fetch the real page
+    let { url } = req.query;
+
+    if (!url) {
+      res.status(400).send("No URL provided");
+      return;
+    }
+
+    // Normalize URL
+    if (!/^https?:\/\//i.test(url)) {
+      url = "https://" + url;
+    }
+
+    // Fetch the page
     const response = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (ProxyBrowser)"
-      }
+      headers: { "User-Agent": "Mozilla/5.0 (ProxyBrowser)" }
     });
+
+    if (!response.ok) {
+      res.status(500).send(`<p style="color:red;">Failed to fetch page: ${response.status}</p>`);
+      return;
+    }
 
     let html = await response.text();
 
@@ -25,10 +31,11 @@ export default async function handler(req, res) {
       `<head$1><script src="/iframe-hijack.js"></script>`
     );
 
-    // Return proxied page
     res.setHeader("Content-Type", "text/html");
     res.send(html);
+
   } catch (err) {
-    res.status(500).send(`<p style="color:red;">Failed to fetch URL: ${err}</p>`);
+    console.error("Proxy error:", err);
+    res.status(500).send(`<p style="color:red;">Proxy error: ${err.message}</p>`);
   }
 }
