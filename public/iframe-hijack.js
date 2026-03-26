@@ -1,4 +1,4 @@
-// iframe-hijack.js
+// /public/iframe-hijack.js
 document.addEventListener('click', e => {
   const a = e.target.closest('a');
   if (a && a.href && !a.target) {
