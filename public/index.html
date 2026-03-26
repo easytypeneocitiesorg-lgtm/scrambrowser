@@ -25,6 +25,7 @@
   <input id="url" placeholder="Search or enter URL">
   <button onclick="go()">Go</button>
   <button onclick="newTab()">+</button>
+  <button id="cors-toggle" onclick="toggleCORS()">CORS Proxy: Off</button>
 </div>
 
 <div id="frame"></div>
@@ -52,7 +53,7 @@ function newTab() {
   container.appendChild(iframe);
   document.getElementById("frame").appendChild(container);
 
-  tabs.push({url:"", container, iframe});
+  tabs.push({url:"", container, iframe, useCORS:false});
   currentTab = tabs.length-1;
   renderTabs();
   switchTab(currentTab);
@@ -65,6 +66,7 @@ function switchTab(i) {
     t.container.classList.toggle("active", j===i);
   });
   document.getElementById("url").value = tabs[i].url || "";
+  updateCORSToggle();
 }
 
 function closeTab(i) {
@@ -98,14 +100,21 @@ function renderTabs() {
   });
 }
 
-// Load page by setting iframe src to the proxy endpoint
+// Load page
 function loadPage(url) {
   const tab = tabs[currentTab];
   tab.url = url;
   document.getElementById("url").value = url;
 
-  // Use proxy endpoint as iframe src
-  tab.iframe.src = "/api/proxy?url=" + encodeURIComponent(url);
+  // Decide which proxy to use
+  let iframeURL;
+  if (tab.useCORS) {
+    iframeURL = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
+  } else {
+    iframeURL = "/api/proxy?url=" + encodeURIComponent(url);
+  }
+
+  tab.iframe.src = iframeURL;
 }
 
 // Go button
@@ -114,6 +123,19 @@ function go() {
   const url = buildURL(input);
   loadPage(url);
   renderTabs();
+}
+
+// CORS toggle
+function toggleCORS() {
+  const tab = tabs[currentTab];
+  tab.useCORS = !tab.useCORS;
+  document.getElementById("cors-toggle").textContent = "CORS Proxy: " + (tab.useCORS ? "On" : "Off");
+  if(tab.url) loadPage(tab.url);
+}
+
+function updateCORSToggle() {
+  const tab = tabs[currentTab];
+  document.getElementById("cors-toggle").textContent = "CORS Proxy: " + (tab.useCORS ? "On" : "Off");
 }
 
 // Listen for iframe messages
