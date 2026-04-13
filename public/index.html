@@ -35,9 +35,13 @@ let currentTab = 0;
 
 // Helpers
 function isURL(str) { return str.includes(".") && !str.includes(" "); }
+
 function buildURL(input) {
-  if (isURL(input)) return input.startsWith("http") ? input : "https://" + input;
-  else return "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(input);
+  if (isURL(input)) {
+    return input.startsWith("http") ? input : "https://" + input;
+  } else {
+    return "https://search.brave.com/search?q=" + encodeURIComponent(input);
+  }
 }
 
 // ENTER key support
