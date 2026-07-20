@@ -1,4 +1,4 @@
-// /api/proxy.js
+
 export default async function handler(req, res) {
   try {
     let { url } = req.query;
@@ -8,12 +8,10 @@ export default async function handler(req, res) {
       return;
     }
 
-    // Normalize URL
     if (!/^https?:\/\//i.test(url)) {
       url = "https://" + url;
     }
 
-    // Fetch the page
     const response = await fetch(url, {
       headers: { "User-Agent": "Mozilla/5.0 (ProxyBrowser)" }
     });
@@ -25,7 +23,6 @@ export default async function handler(req, res) {
 
     let html = await response.text();
 
-    // 🔥 Inject navigation override
     html = html.replace(
       /<head([^>]*)>/i,
       `<head$1>
